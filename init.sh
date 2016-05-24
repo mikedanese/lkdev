@@ -13,7 +13,7 @@ mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devtmpfs none /dev
 
-mount -o rw /dev/sda /mnt/root || rescue_shell
+mount -o rw /dev/sda1 /mnt/root || rescue_shell
 
 umount /proc
 umount /sys

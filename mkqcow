@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -x
+set -o errexit
+set -o pipefail
+set -o nounset
+
+BASE_TARGET_DIR="base"
+
+sudo rm -rf base.qcow
+qemu-img create -f qcow2 -o preallocation=metadata base.qcow2 20G
+
+sudo modprobe nbd || true
+sudo mkdir -p "/mnt/${BASE_TARGET_DIR}"
+
+sudo qemu-nbd -c /dev/nbd0 base.qcow2
+(
+  sudo mkfs.ext4 -F /dev/nbd0 || true
+  sudo mount /dev/nbd0 "/mnt/${BASE_TARGET_DIR}"
+  (
+    sudo cp -a "${BASE_TARGET_DIR}/." "/mnt/${BASE_TARGET_DIR}/."
+  )
+  sudo umount "/mnt/${BASE_TARGET_DIR}"
+)
+sudo qemu-nbd -d /dev/nbd0

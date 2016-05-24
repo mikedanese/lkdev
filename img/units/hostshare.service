@@ -1,9 +1,0 @@
-[Unit]
-Description=mount a directory shared with the host
-
-[Service]
-Type=oneshot
-ExecStart=/bin/sh -c 'set -e; mkdir -p /root/shared; mount -t 9p -o trans=virtio,version=9p2000.L hostshare /root/shared'
-
-[Install]
-WantedBy=multi-user.target

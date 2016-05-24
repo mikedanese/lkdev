@@ -1,4 +1,5 @@
 base
+imgs/
 base.img
 base.qcow2
 initfs/

@@ -1,9 +1,0 @@
-[Unit]
-Description=Write a useful /etc/issue
-
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/write-issue
-
-[Install]
-WantedBy=multi-user.target

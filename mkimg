@@ -5,87 +5,40 @@ set -o nounset
 set -o pipefail
 
 LKDEV_ROOT=$(dirname "${BASH_SOURCE}")
+KDIR="${LKDEV_ROOT}/../linux"
+KBUILD_OUTPUT="${KDIR}/build"
+BASE_TARGET_DIR="base"
+
+PACKAGES=(systemd)
+
 
 source "${LKDEV_ROOT}/lib/util.sh"
 
 util::defer util::print_stack
 
-readonly DEB_RELEASE="stable"
-readonly BASE_TARGET_DIR="base"
-readonly KDIR="../linux"
-readonly DEB_MIRROR="http://ftp.us.debian.org/debian/ "
-readonly PACKAGES=(
-  "openssh-server"
-  "vim"
-  "sudo"
-  "less"
-  "curl"
-  "iproute2"
-  "iptables"
-  "bridge-utils"
-  "byobu"
-  "telnet"
-  "stress"
-  "tcpdump"
-  "dnsutils"
-  "git"
-  "crash"
-)
-readonly BUILD_PACKAGES=(
-  "bc"
-  "libelf-dev"
-  "libdw-dev"
-  "ninja-build"
-  "build-essential"
-  "bison"
-  "cmake"
-  "flex"
-  "libedit-dev"
-  "libllvm3.7"
-  "llvm-3.7-dev"
-  "libclang-3.7-dev"
-  "python"
-  "zlib1g-dev"
-)
 
-mkdir -p "${BASE_TARGET_DIR}"
+sudo mkdir -p "${BASE_TARGET_DIR}/etc/ssl/certs/"
 
-sudo debootstrap --verbose --include=$(util::join "," "${PACKAGES[@]}") "${DEB_RELEASE}" "${BASE_TARGET_DIR}/" "${DEB_MIRROR}"
+sudo cp /etc/ssl/certs/ca-certificates.crt "${BASE_TARGET_DIR}/etc/ssl/certs/"
+
+bash arch-bootstrap.sh "${BASE_TARGET_DIR}/"
+
+LC_ALL=C chroot "${BASE_TARGET_DIR}" /usr/bin/pacman \
+    --noconfirm -Sy --force ${PACKAGES[@]}
+
+chroot "${BASE_TARGET_DIR}" ln -fs /usr/lib/systemd/systemd /sbin/init
 
 # Make root passwordless for convenience.
 sudo sed -i '/^root/ { s/:x:/::/ }' "${BASE_TARGET_DIR}/etc/passwd"
 # Add a getty on the virtio console
-echo 'V0:23:respawn:/sbin/getty 115200 hvc0' | sudo tee -a "${BASE_TARGET_DIR}/etc/inittab"
+#echo 'V0:23:respawn:/sbin/getty 115200 hvc0' | sudo tee -a "${BASE_TARGET_DIR}/etc/inittab"
 # Automatically bring up enp0s4 using DHCP
-printf '\nsource-directory /etc/network/interfaces.d\n\nauto eth0\niface eth0 inet dhcp\n' | sudo tee "${BASE_TARGET_DIR}/etc/network/interfaces"
+# printf '\nsource-directory /etc/network/interfaces.d\n\nauto eth0\niface eth0 inet dhcp\n' | sudo tee "${BASE_TARGET_DIR}/etc/network/interfaces"
 # Set up my ssh pubkey for root in the VM
 sudo mkdir -p "${BASE_TARGET_DIR}/root/.ssh/"
 cat ~/.ssh/id_?sa.pub | sudo tee "${BASE_TARGET_DIR}"/root/.ssh/authorized_keys
-# Add our units and helper scripts
-sudo cp img/bin/* "${BASE_TARGET_DIR}/usr/local/bin"
-for unit in $(ls img/units/); do
-  sudo cp "img/units/$unit" "${BASE_TARGET_DIR}/etc/systemd/system"
-  sudo chroot "${BASE_TARGET_DIR}" /bin/bash -c "systemctl enable $unit"
-done
 
 # kernel modules
 sudo rm -rf "${BASE_TARGET_DIR}/lib/modules"
 sudo make -C "${KDIR}" O="${KBUILD_OUTPUT}" INSTALL_MOD_PATH="${PWD}/${BASE_TARGET_DIR}" modules_install
 sudo make -C "${KDIR}" O="${KBUILD_OUTPUT}" INSTALL_HDR_PATH="${PWD}/${BASE_TARGET_DIR}/usr" headers_install
-
-util::start_trace
-
-qemu-img create -f qcow2 -o preallocation=metadata base.qcow2 20G
-
-sudo modprobe nbd
-sudo qemu-nbd -c /dev/nbd0 base.qcow2
-util::defer sudo qemu-nbd -d /dev/nbd0
-
-sudo mkfs.ext4 -F /dev/nbd0 || true
-
-sudo mkdir -p "/mnt/${BASE_TARGET_DIR}"
-
-sudo mount /dev/nbd0 "/mnt/${BASE_TARGET_DIR}"
-util::defer sudo umount "/mnt/${BASE_TARGET_DIR}"
-
-sudo cp -a "${BASE_TARGET_DIR}/." "/mnt/${BASE_TARGET_DIR}/."
