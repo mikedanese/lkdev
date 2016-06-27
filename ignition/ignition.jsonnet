@@ -25,6 +25,14 @@
       filesystem: "root",
       path: "/etc/cloud/cloud-init.disabled",
       contents: { source: "data:," },
+    },{
+      filesystem: "root",
+      path: "/etc/network/interfaces",
+      contents: { source: "data:text/plain;base64," + std.base64(importstr "etc/network/interfaces") },
+    },{
+      filesystem: "root",
+      path: "/etc/network/interfaces.d/enp0s4.cfg",
+      contents: {  source: "data:text/plain;base64," + std.base64(importstr "etc/network/interfaces.d/enp0s4.cfg")},
     }],
     filesystems: [{
       name: "root",
