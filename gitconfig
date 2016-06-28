@@ -1,0 +1,29 @@
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[branch "master"]
+        remote = linux-next
+        merge = refs/heads/master
+[remote "torvalds-mainline"]
+        url = https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
+        fetch = +refs/heads/*:refs/remotes/torvalds-mainline/*
+[remote "linux-next"]
+        url = https://kernel.googlesource.com/pub/scm/linux/kernel/git/next/linux-next
+        fetch = +refs/heads/*:refs/remotes/linux-next/*
+[remote "chrome-next"]
+        url = https://chromium.googlesource.com/chromiumos/third_party/kernel-next
+        fetch = +refs/heads/*:refs/remotes/chrome-next/*
+[remote "chrome"]
+        url = https://chromium.googlesource.com/chromiumos/third_party/kernel
+        fetch = +refs/heads/*:refs/remotes/chrome/*
+[remote "davem-net-next"]
+        url = https://kernel.googlesource.com/pub/scm/linux/kernel/git/davem/net-next
+        fetch = +refs/heads/*:refs/remotes/davem-net-next/*
+[remote "axboe-block"]
+        url = https://kernel.googlesource.com/pub/scm/linux/kernel/git/axboe/linux-block.git
+        fetch = +refs/heads/*:refs/remotes/axboe-block/*
+[remote "sergeh-linux-security"]
+        url = https://kernel.googlesource.com/pub/scm/linux/kernel/git/sergeh/linux-security.git
+        fetch = +refs/heads/*:refs/remotes/sergeh-linux-security/*
