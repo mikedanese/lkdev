@@ -23,8 +23,8 @@ if blkid | grep -q "${IGNITION_LABEL}"; then
   mount --bind /dev  /mnt/root/dev
 
   mkdir -p /run
-  mkdir -p /mnt/root/var/lib/ignition
-  mount --bind /run /mnt/root/var/lib/ignition
+  mkdir -p /mnt/root/var/lib/ignition/run
+  mount --bind /run /mnt/root/var/lib/ignition/run
   mkdir -p /usr/share/oem
   device="$(blkid | grep "${IGNITION_LABEL}" | awk -F':' '{print $1}')"
   mount -t auto "${device}" /usr/share/oem
@@ -37,7 +37,7 @@ if blkid | grep -q "${IGNITION_LABEL}"; then
   umount /mnt/root/sys
   umount /mnt/root/dev
   umount /usr/share/oem
-  umount /mnt/root/var/lib/ignition
+  umount /mnt/root/var/lib/ignition/run
 
 fi
 

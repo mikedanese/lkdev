@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for alg in ecdsa rsa dsa; do
+  if [[ ! -f "/etc/ssh/ssh_host_${alg}_key" ]]; then
+    ssh-keygen -f "/etc/ssh/ssh_host_${alg}_key" -N "" -t "${alg}"
+  fi
+done;
