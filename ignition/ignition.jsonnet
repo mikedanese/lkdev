@@ -33,6 +33,13 @@
       filesystem: "root",
       path: "/etc/network/interfaces.d/enp0s4.cfg",
       contents: {  source: "data:text/plain;base64," + std.base64(importstr "etc/network/interfaces.d/enp0s4.cfg")},
+    },{
+      filesystem: "root",
+      path: "/root/.ssh/authorized_keys",
+      contents: {
+        source: "data:text/plain;base64," + std.base64(importstr "authorized_keys"),
+        mode: 384,
+      },
     }],
     filesystems: [{
       name: "root",

@@ -30,7 +30,8 @@ if blkid | grep -q "${IGNITION_LABEL}"; then
   mount -t auto "${device}" /usr/share/oem
 
   ignition --stage files --oem pxe --root /mnt/root
-  chroot /mnt/root systemctl preset-all || rescue_shell
+  chroot /mnt/root systemctl enable early-boot.service
+  chroot /mnt/root systemctl enable late-boot.service
 
   umount /mnt/root/proc
   umount /mnt/root/sys
