@@ -1,9 +1,12 @@
 #!/bin/bash
+
+MODE="l3"
+
 ip netns add ns0
 ip netns add ns1
 
-ip link add ipv0 link enp0s4 type ipvlan mode l2
-ip link add ipv1 link enp0s4 type ipvlan mode l2
+ip link add ipv0 link enp0s4 type ipvlan mode "${MODE}"
+ip link add ipv1 link enp0s4 type ipvlan mode "${MODE}"
 
 ip link set ipv0 netns ns0
 ip link set ipv1 netns ns1
