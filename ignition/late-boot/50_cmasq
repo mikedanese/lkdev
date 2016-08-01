@@ -1,0 +1,5 @@
+#!/bin/bash
+
+MASQ_CIDR="192.168.0.0/16"
+
+iptables -t nat -A POSTROUTING ! -d "${MASQ_CIDR}" -s "${MASQ_CIDR}" -j MASQUERADE

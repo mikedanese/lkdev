@@ -2,31 +2,32 @@
 
 MODE="l3s"
 ETH="enp0s4"
-MASQ_CIDR="192.168.0.0/16"
+NS0="${MODE}-ns0"
+NS1="${MODE}-ns1"
+IPV0="${MODE}-ipv0"
+IPV1="${MODE}-ipv1"
 
-ip netns add ns0
-ip netns add ns1
+ip netns add "${NS0}"
+ip netns add "${NS1}"
 
-ip link add ipv0 link "${ETH}" type ipvlan mode "${MODE}"
-ip link add ipv1 link "${ETH}" type ipvlan mode "${MODE}"
+ip link add "${IPV0}" link "${ETH}" type ipvlan mode "${MODE}"
+ip link add "${IPV1}" link "${ETH}" type ipvlan mode "${MODE}"
 
-ip link set ipv0 netns ns0
-ip link set ipv1 netns ns1
+ip link set "${IPV0}" netns "${NS0}"
+ip link set "${IPV1}" netns "${NS1}"
 
-ip netns exec ns0 ip link set ipv0 name eth0
-ip netns exec ns0 ip link set dev eth0 up
+ip netns exec "${NS0}" ip link set "${IPV0}" name eth0
+ip netns exec "${NS0}" ip link set dev eth0 up
 
-ip netns exec ns1 ip link set ipv1 name eth0
-ip netns exec ns1 ip link set dev eth0 up
+ip netns exec "${NS1}" ip link set "${IPV1}" name eth0
+ip netns exec "${NS1}" ip link set dev eth0 up
 
-ip netns exec ns0 ip link set lo up
-ip netns exec ns0 ip addr add 192.168.1.10/32 dev eth0
-ip netns exec ns0 ip link set eth0 up
-ip netns exec ns0 ip route add default dev eth0
+ip netns exec "${NS0}" ip link set lo up
+ip netns exec "${NS0}" ip addr add 192.168.1.10/32 dev eth0
+ip netns exec "${NS0}" ip link set eth0 up
+ip netns exec "${NS0}" ip route add default dev eth0
 
-ip netns exec ns1 ip link set lo up
-ip netns exec ns1 ip addr add 192.168.1.11/32 dev eth0
-ip netns exec ns1 ip link set eth0 up
-ip netns exec ns1 ip route add default dev eth0
-
-iptables -t nat -A POSTROUTING ! -d "${MASQ_CIDR}" -s "${MASQ_CIDR}" -j MASQUERADE
+ip netns exec "${NS1}" ip link set lo up
+ip netns exec "${NS1}" ip addr add 192.168.1.11/32 dev eth0
+ip netns exec "${NS1}" ip link set eth0 up
+ip netns exec "${NS1}" ip route add default dev eth0

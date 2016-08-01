@@ -66,6 +66,9 @@ local lkdev = {
            + lkdev.late_boot([{
       name: "50_ipvlan",
       content: importstr "late-boot/50_ipvlan",
+    }, {
+      name: "50_cmasq",
+      content: importstr "late-boot/50_cmasq",
     }]),
     filesystems: [{
       name: "root",
