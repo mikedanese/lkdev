@@ -16,9 +16,19 @@ MACADDR="52:54:00:$(dd if=/dev/urandom bs=512 count=1 2>/dev/null | md5sum | sed
 
 SHARED_VOLUME="${HOME}"
 
-CPU_OPTS="-smp 2"
-MEMORY_OPTS="-m 2048"
-NET_OPTS="-netdev tap,id=net0,script=./net/qemu-ifup,downscript=./net/qemu-ifdown -device e1000,netdev=net0,mac=${MACADDR}"
+CPU_OPTS=(-smp 2)
+MEMORY_OPTS=(-m 2048)
+
+NET_OPTS=()
+for idx in {00..02}; do
+  MACADDR="52:54:00:$(dd if=/dev/urandom bs=512 count=1 2>/dev/null \
+    | md5sum \
+    | sed 's/^\(..\)\(..\)\(..\).*$/\1:\2:\3/')"
+  NET_OPTS+=("-netdev")
+  NET_OPTS+=("tap,id=net${idx},script=./net/qemu-ifup,downscript=./net/qemu-ifdown")
+  NET_OPTS+=("-device")
+  NET_OPTS+=("e1000,netdev=net${idx},mac=${MACADDR}")
+done;
 
 while getopts ":d" opt; do
   case $opt in
@@ -40,5 +50,5 @@ kvm \
   -drive "file=${IGNITE},index=1,media=disk" \
   -fsdev "local,security_model=passthrough,id=fsdev0,path=${SHARED_VOLUME}" \
   -device "virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare" \
-  ${NET_OPTS[@]} ${CPU_OPTS[@]} ${MEMORY_OPTS[@]} \
+  "${NET_OPTS[@]}" "${CPU_OPTS[@]}" "${MEMORY_OPTS[@]}" \
   -nographic ${EXTRA_OPTS[@]:-}
