@@ -3,6 +3,7 @@ IMAGE_VERSION ?= 16.04
 IMAGE = ubuntu-$(IMAGE_VERSION)-server-cloudimg-amd64-disk1.img
 IMAGE_CDN_URL = https://uec-images.ubuntu.com/releases/${IMAGE_VERSION}/release/${IMAGE}
 TMP = .tmp
+VMLINUX = ../linux/build/vmlinux
 
 default: boot
 .PHONY += boot
@@ -16,36 +17,48 @@ $(TMP)/ubuntu.qcow2: $(TMP)/ubuntu-$(IMAGE_VERSION).qcow2
 $(TMP)/initramfs.cpio.gz: initramfs/*
 	$(MAKE) -C initramfs/
 
-$(TMP)/modules.tar:
-	mkdir -p $(TMP)/modules/
+$(TMP)/modules: $(VMLINUX)
+	rm -rf $@
+	mkdir -p $@
 	make -C ../linux/ modules_install INSTALL_MOD_PATH="$(PWD)/$(TMP)/modules/"
-	tar cvf $@ -C $(TMP)/modules/ .
 
-$(TMP)/headers.tar:
-	mkdir -p $(TMP)/headers/usr
+$(TMP)/modules.iso: $(TMP)/modules
+	genisoimage -output $@ -root $< -volid kernel-modules -joliet -rock $</**
+
+$(TMP)/headers: $(VMLINUX)
+	rm -rf $@
+	mkdir -p $@/usr
 	make -C ../linux/ headers_install INSTALL_HDR_PATH="$(PWD)/$(TMP)/headers/usr"
-	tar cvf $@ -C $(TMP)/headers/ .
 
+$(TMP)/headers.iso: $(TMP)/headers
+	genisoimage -output $@ -root $< -volid kernel-headers -joliet -rock $</**
 
-$(TMP)/ignition.iso: ignition/**
+$(TMP)/ignition: ignition/**
 	mkdir -p $(TMP)/ignition
 	jsonnet --multi $(TMP)/ignition ignition/all.jsonnet
-	genisoimage -output $@ -volid ignition -joliet -rock $(TMP)/ignition/*
+
+$(TMP)/ignition.iso: $(TMP)/ignition
+	genisoimage -output $@ -root $< -volid ignition -joliet -rock $</**
 
 prepare: $(TMP)/ubuntu.qcow2 $(TMP)/initramfs.cpio.gz
 .PHONY: prepare
 
 
-boot: $(TMP)/ubuntu.qcow2 $(TMP)/initramfs.cpio.gz $(TMP)/ignition.iso
+boot: \
+	$(TMP)/ubuntu.qcow2 \
+	$(TMP)/initramfs.cpio.gz \
+	$(TMP)/ignition.iso \
+	$(TMP)/headers.iso \
+	$(TMP)/modules.iso
 	sudo ./boot.sh $(EXTRA_ARGS)
 .PHONY += boot
 
 clean:
 	rm -rf \
 		$(TMP)/modules \
-		$(TMP)/modules.tar \
-		$(TMP)/headers.tar \
+		$(TMP)/modules.iso \
 		$(TMP)/headers \
+		$(TMP)/headers.iso \
 		$(TMP)/cloud-init.tar \
 		$(TMP)/cloud-init \
 		$(TMP)/initramfs \

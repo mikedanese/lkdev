@@ -53,6 +53,10 @@ local lkdev = {
       contents: { source: "data:text/plain;base64," + std.base64(importstr "etc/network/interfaces.d/enp0s4.cfg") },
     }, {
       filesystem: "root",
+      path: "/etc/fstab",
+      contents: { source: "data:text/plain;base64," + std.base64(importstr "etc/fstab") },
+    }, {
+      filesystem: "root",
       path: "/root/.ssh/authorized_keys",
       mode: 384,
       contents: {
