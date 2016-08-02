@@ -23,7 +23,7 @@ $(TMP)/modules: $(VMLINUX)
 	make -C ../linux/ modules_install INSTALL_MOD_PATH="$(PWD)/$(TMP)/modules/"
 
 $(TMP)/modules.iso: $(TMP)/modules
-	genisoimage -output $@ -root $< -volid kernel-modules -joliet -rock $</**
+	genisoimage -output $@ -volid kernel-modules -joliet -rock $</**
 
 $(TMP)/headers: $(VMLINUX)
 	rm -rf $@
@@ -31,14 +31,15 @@ $(TMP)/headers: $(VMLINUX)
 	make -C ../linux/ headers_install INSTALL_HDR_PATH="$(PWD)/$(TMP)/headers/usr"
 
 $(TMP)/headers.iso: $(TMP)/headers
-	genisoimage -output $@ -root $< -volid kernel-headers -joliet -rock $</**
+	genisoimage -output $@ -volid kernel-headers -joliet -rock $</**
 
 $(TMP)/ignition: ignition/**
+	rm -rf $@
 	mkdir -p $(TMP)/ignition
 	jsonnet --multi $(TMP)/ignition ignition/all.jsonnet
 
 $(TMP)/ignition.iso: $(TMP)/ignition
-	genisoimage -output $@ -root $< -volid ignition -joliet -rock $</**
+	genisoimage -output $@ -volid ignition -joliet -rock $</**
 
 prepare: $(TMP)/ubuntu.qcow2 $(TMP)/initramfs.cpio.gz
 .PHONY: prepare
