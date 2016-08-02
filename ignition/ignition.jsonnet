@@ -73,6 +73,9 @@ local lkdev = {
     }, {
       name: "50_cmasq",
       content: importstr "late-boot/50_cmasq",
+    }, {
+      name: "60_apt-get",
+      content: importstr "late-boot/60_apt-get",
     }]),
     filesystems: [{
       name: "root",
