@@ -66,6 +66,9 @@ local lkdev = {
            + lkdev.early_boot([{
       name: "50_ssh_fingerprints",
       content: importstr "early-boot/50_ssh_fingerprints",
+    }, {
+      name: "50_ssh_fingerprints",
+      content: importstr "early-boot/50_ssh_fingerprints",
     }])
            + lkdev.late_boot([{
       name: "50_ipvlan",

@@ -8,6 +8,9 @@ VMLINUX = ../linux/build/vmlinux
 default: boot
 .PHONY += boot
 
+$(VMLINUX):
+	$(MAKE) -C ../linux
+
 $(TMP)/ubuntu-$(IMAGE_VERSION).qcow2:
 	curl -sSL --fail -o "$@" "${IMAGE_CDN_URL}"
 
@@ -23,19 +26,19 @@ $(TMP)/modules: $(VMLINUX)
 	make -C ../linux/ modules_install INSTALL_MOD_PATH="$(PWD)/$(TMP)/modules/"
 
 $(TMP)/modules.iso: $(TMP)/modules
-	genisoimage -output $@ -volid kernel-modules -joliet -rock $</**
+	genisoimage -output $@ -volid kernel-modules -joliet -rock $<
 
 $(TMP)/headers: $(VMLINUX)
 	rm -rf $@
-	mkdir -p $@/usr
-	make -C ../linux/ headers_install INSTALL_HDR_PATH="$(PWD)/$(TMP)/headers/usr"
+	mkdir -p $@
+	make -C ../linux/ headers_install INSTALL_HDR_PATH="$(PWD)/$@"
 
 $(TMP)/headers.iso: $(TMP)/headers
-	genisoimage -output $@ -volid kernel-headers -joliet -rock $</**
+	genisoimage -output $@ -volid kernel-headers -joliet -rock -root usr/ $<
 
 $(TMP)/ignition: ignition/**
 	rm -rf $@
-	mkdir -p $(TMP)/ignition
+	mkdir -p $@
 	jsonnet --multi $(TMP)/ignition ignition/all.jsonnet
 
 $(TMP)/ignition.iso: $(TMP)/ignition
@@ -60,8 +63,8 @@ clean:
 		$(TMP)/modules.iso \
 		$(TMP)/headers \
 		$(TMP)/headers.iso \
-		$(TMP)/cloud-init.tar \
-		$(TMP)/cloud-init \
+		$(TMP)/ignition \
+		$(TMP)/ignition.iso \
 		$(TMP)/initramfs \
 		$(TMP)/initramfs.cpio.gz
 .PHONY += clean
