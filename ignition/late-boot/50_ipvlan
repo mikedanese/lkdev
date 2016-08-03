@@ -4,6 +4,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+exit 0
+
 setup_ipvlan() {
   NS0="${MODE}-ns0"
   NS1="${MODE}-ns1"

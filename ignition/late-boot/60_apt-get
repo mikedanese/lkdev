@@ -14,5 +14,8 @@ apt-get install -y \
   git \
   vim \
   htop \
-  conntrack
+  conntrack \
+  libdwarf-dev libunwind8-dev lzma-dev libdwarf-dev libaudit-dev libelf-dev \
+  libnuma-dev libperl-dev libpython-dev libslang2-dev libdwarf-dev libaudit-dev libelf-dev \
+  systemtap
 apt-get upgrade -y

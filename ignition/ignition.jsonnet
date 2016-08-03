@@ -66,11 +66,11 @@ local lkdev = {
            + lkdev.early_boot([{
       name: "50_ssh_fingerprints",
       content: importstr "early-boot/50_ssh_fingerprints",
-    }, {
-      name: "50_ssh_fingerprints",
-      content: importstr "early-boot/50_ssh_fingerprints",
     }])
            + lkdev.late_boot([{
+      name: "10_iso-installer",
+      content: importstr "late-boot/10_iso-installer",
+    }, {
       name: "50_ipvlan",
       content: importstr "late-boot/50_ipvlan",
     }, {
